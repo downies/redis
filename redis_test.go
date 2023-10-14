@@ -31,4 +31,10 @@ func Test_Example(t *testing.T) {
 			"\"+hello world\\r\\n",
 		},
 	}
+	for t := range tt {
+		out := parseExpr(tt[t].expr)
+		if out != tt[t].expr {
+			t.Errorf("Expected %s, got %s", tt[t].expr, out)
+		}
+	}
 }
