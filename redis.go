@@ -3,47 +3,50 @@ package main
 import (
 	"fmt"
 	"net"
+	"os"
 )
 
 func main() {
-	// Listen for incoming connections
 	listener, err := net.Listen("tcp", "localhost:6379")
 	if err != nil {
-		fmt.Println("Error:", err)
-		return
+		logAndExit("Error starting TCP server:", err)
 	}
 	defer listener.Close()
 
-	fmt.Println("Server is listening on port 6379")
-
 	for {
-		// Accept incoming connections
 		conn, err := listener.Accept()
 		if err != nil {
-			fmt.Println("Error:", err)
-			continue
+			logAndExit("Error accepting connection:", err)
 		}
-
-		// Handle client connection in a goroutine
 		go handleClient(conn)
 	}
 }
 
+func logAndExit(s string, err error) {
+	fmt.Println(s, err)
+	os.Exit(1)
+}
+
 func handleClient(conn net.Conn) {
-	//defer conn.Close()
+	// Read data from the client
+	defer conn.Close()
 	body := make([]byte, 1024)
 	n, err := conn.Read(body)
 	if err != nil {
-		fmt.Println("Error:", err)
-		return
+		logAndExit("Error reading from client:", err)
 	}
-	fmt.Println("Received:", string(body[:n]))
 
-	conn.Write([]byte("+OK\r\n"))
+	// Process data from the client
+	actualData := body[:n]
+	inputExpr := string(actualData)
 
-	// Read and process data from the client
-	// ...
+	out := parseExpr(inputExpr)
 
 	// Write data back to the client
-	// ...
+	conn.Write([]byte(out))
+}
+
+func parseExpr(expr string) string {
+	// parse RESP
+	return "+OK\r\n"
 }
